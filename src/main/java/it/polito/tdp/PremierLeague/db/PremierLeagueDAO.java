@@ -6,7 +6,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
 import it.polito.tdp.PremierLeague.model.Action;
+import it.polito.tdp.PremierLeague.model.Arco;
 import it.polito.tdp.PremierLeague.model.Match;
 import it.polito.tdp.PremierLeague.model.Player;
 import it.polito.tdp.PremierLeague.model.Team;
@@ -102,6 +105,50 @@ public class PremierLeagueDAO {
 				
 				result.add(match);
 
+			}
+			conn.close();
+			return result;
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	public void loadAllTeams(Map<Integer,Team> idMap){
+		String sql = "SELECT * FROM Teams";
+		Connection conn = DBConnect.getConnection();
+
+		try {
+			PreparedStatement st = conn.prepareStatement(sql);
+			ResultSet res = st.executeQuery();
+			while (res.next()) {
+				if(!idMap.containsKey(res.getInt("TeamID"))) {
+					Team team = new Team(res.getInt("TeamID"), res.getString("Name"));
+					idMap.put(team.getTeamID(), team);
+				}
+			}
+			conn.close();
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public List<Arco> getArchi(Map<Integer,Team> idMap){
+		String sql = "SELECT m.TeamHomeID, m.TeamAwayID, m.ResultOfTeamHome AS risultato "
+						+ "FROM matches m";
+		List<Arco> result = new ArrayList<>();
+		Connection conn = DBConnect.getConnection();
+
+		try {
+			PreparedStatement st = conn.prepareStatement(sql);
+			ResultSet res = st.executeQuery();
+			while (res.next()) {
+				if(idMap.containsKey(res.getInt("m.TeamHomeID")) && idMap.containsKey(res.getInt("m.TeamAwayID"))) {
+					Arco arco= new Arco(idMap.get(res.getInt("m.TeamHomeID")),idMap.get(res.getInt("m.TeamAwayID")), res.getInt("risultato"));
+					result.add(arco);
+				}
 			}
 			conn.close();
 			return result;
