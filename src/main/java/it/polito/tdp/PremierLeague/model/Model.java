@@ -2,6 +2,7 @@ package it.polito.tdp.PremierLeague.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,18 +51,22 @@ public class Model {
 		}
 	}
 	
-	public Collection<Team> getSquadreBattute(Team team){
-		Map<Integer,Team> result= new TreeMap<>();
-		for(Team t: Graphs.successorListOf(this.grafo, team))
-			result.put((int) this.grafo.getEdgeWeight(this.grafo.getEdge(team, t)), t);
-		return result.values();		
+	public List<Team> getSquadreBattute(Team team){
+		List<Team> result= new ArrayList<>();
+		for(DefaultWeightedEdge t: this.grafo.outgoingEdgesOf(team)){
+			result.add(Graphs.getOppositeVertex(this.grafo, t, team));
+		}
+		result.sort(Comparator.comparing(Team::getPunti).reversed());
+		return result;		
 	}
 	
-	public Collection<Team> getSquadreHannoBattuto(Team team){
-		Map<Integer,Team> result= new TreeMap<>();
-		for(Team t: Graphs.predecessorListOf(this.grafo, team))
-			result.put((int) this.grafo.getEdgeWeight(this.grafo.getEdge(t, team)), t);
-		return result.values();		
+	public List<Team> getSquadreHannoBattuto(Team team){
+		List<Team> result= new ArrayList<>();
+		for(DefaultWeightedEdge t: this.grafo.incomingEdgesOf(team)) {
+			result.add(Graphs.getOppositeVertex(this.grafo, t, team));
+		}
+		result.sort(Comparator.comparing(Team::getPunti).reversed());
+		return result;		
 	}
 	
 	public SimpleDirectedWeightedGraph<Team, DefaultWeightedEdge> getGrafo() {
